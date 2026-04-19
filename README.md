@@ -6,7 +6,6 @@
 
 <p align="center">
 <a href="#"><img src="https://img.shields.io/badge/Maintained%3F-yes-green.svg" alt="Maintained"></a>
-<a href="#"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License"></a>
 <a href="#"><img src="https://img.shields.io/badge/Payment-Midtrans-blue" alt="Midtrans"></a>
 <a href="#"><img src="https://img.shields.io/badge/Integrations-Pterodactyl-orange" alt="Pterodactyl"></a>
 </p>
