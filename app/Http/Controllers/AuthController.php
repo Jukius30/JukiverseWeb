@@ -55,7 +55,6 @@ class AuthController extends Controller
                         'minecraft_name' => $user->name, // Memastikan kolom minecraft_name terisi
                         'updated_at' => now()
                     ]);
-
             } else {
                 // INSERT: Masukkan data baru termasuk minecraft_name agar tidak error SQL
                 DB::table('emails')->insert([
@@ -76,15 +75,49 @@ class AuthController extends Controller
             ]);
 
             // 5. Paksa simpan session
-            $request->session()->save(); 
+            $request->session()->save();
 
             return redirect()->route('home')->with('success', 'Halo ' . $user->name . ', berhasil login!');
-
         } catch (\Exception $e) {
             Log::error("Login Error: " . $e->getMessage());
             // Menampilkan pesan error lebih detail untuk debugging jika butuh
             return back()->with('error', 'Terjadi kesalahan pada sistem database.');
         }
+    }
+
+    public function showSettings()
+    {
+        // Ambil data langsung dari tabel 'emails' berdasarkan UUID di session
+        $player = DB::table('emails')
+            ->where('minecraft_uuid', session('uuid'))
+            ->first();
+
+        return view('pages.settings', compact('player'));
+    }
+
+    public function updateEmail(Request $request)
+    {
+        // Validasi input
+        $request->validate([
+            'email' => 'required|email|max:255',
+        ]);
+
+        // Proses Update langsung ke database
+        $updated = DB::table('emails')
+            ->where('minecraft_uuid', session('uuid'))
+            ->update([
+                'email_address' => $request->email,
+                'updated_at'    => now(), // Wajib diisi manual jika pakai DB
+            ]);
+
+        if ($updated) {
+            // Update session email agar tampilan navbar/profil sinkron
+            session(['email' => $request->email]);
+
+            return back()->with('success', 'Email berhasil diperbarui!');
+        }
+
+        return back()->with('error', 'Tidak ada perubahan atau data tidak ditemukan.');
     }
 
     public function logout(Request $request)
