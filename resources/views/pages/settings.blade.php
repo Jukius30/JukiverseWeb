@@ -66,7 +66,7 @@
                     <div class="card-footer bg-black bg-opacity-20 border-0 text-center py-3">
                         {{-- Menggunakan text-info agar biru cerah dan terbaca jelas --}}
                         <a href="{{ route('home') }}" class="text-info small text-decoration-none fw-bold hover-white">
-                            <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+                            <i class="bi bi-arrow-left me-1"></i> Back to Home
                         </a>
                     </div>
                 </div>
