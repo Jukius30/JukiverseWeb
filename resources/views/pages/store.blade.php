@@ -3,7 +3,6 @@
 @section('title', 'Jukiverse - Store')
 
 @section('content')
-    {{-- Menghapus bg-light atau background standar lainnya --}}
     <div class="store-wrapper min-vh-100 pb-5">
         <div class="container py-5">
             {{-- Header Section --}}
@@ -21,9 +20,7 @@
                             style="height: 100px; background: linear-gradient(45deg, #6a11cb 0%, #2575fc 100%); opacity: 0.8;">
                         </div>
 
-                        {{-- Tambahkan d-flex dan flex-column di sini --}}
                         <div class="card-body text-center d-flex flex-column" style="margin-top: -50px;">
-
                             <div class="position-relative d-inline-block mb-3">
                                 <img src="https://mc-heads.net/avatar/{{ session('uuid') }}/100" alt="Skin"
                                     class="rounded-circle border border-4 border-dark shadow-lg profile-avatar">
@@ -34,7 +31,6 @@
                             <h3 class="text-info fw-bold mb-1">{{ session('username') }}</h3>
                             <p class="small text-white-50">Minecraft Citizen</p>
 
-                            {{-- mt-auto akan mendorong form ini ke paling bawah card-body --}}
                             <form action="{{ route('logout') }}" method="POST" class="mt-auto pt-4">
                                 @csrf
                                 <button class="btn btn-outline-danger btn-sm w-100 rounded-pill transition-all fw-bold">
@@ -45,7 +41,7 @@
                     </div>
                 </div>
 
-                {{-- Recent Purchases Table --}}
+                {{-- Transaction History Table --}}
                 <div class="col-md-8 mb-5">
                     <div class="d-flex align-items-center mb-4">
                         <div
@@ -71,7 +67,7 @@
                                     <tr>
                                         <td class="ps-4 py-3 border-secondary border-opacity-10">
                                             <span
-                                                class="font-monospace text-white small">#{{ $purchase->midtrans_order_id }}</span>
+                                                class="font-monospace text-white small">{{ $purchase->midtrans_order_id }}</span>
                                         </td>
                                         <td class="py-3 border-secondary border-opacity-10">
                                             @if ($purchase->payment_status == 'success')
@@ -112,69 +108,72 @@
             </div>
 
             <div class="row g-4 justify-content-center">
-                @foreach ($products as $product)
-                    <div class="col-md-6 col-lg-3">
-                        <div class="card dark-card text-white h-100 shadow-sm item-card text-center">
-                            <div class="card-body d-flex flex-column p-4">
-                                <div class="mb-3 mx-auto icon-glow">
-                                    <span style="font-size: 3rem;">💰</span>
-                                </div>
-                                <h5 class="card-title fw-bold text-info mb-3">{{ $product->product_name }}</h5>
-                                <p class="card-text text-white-50 small flex-grow-1 px-2">
-                                    {{ $product->description ?? 'Get ' . number_format($product->amount) . ' coins for your account instantly.' }}
-                                </p>
+                {{-- Fixed Package Products --}}
 
-                                <div
-                                    class="bg-black bg-opacity-40 rounded-pill py-2 mb-3 border border-white border-opacity-10">
-                                    <h4 class="text-white fw-bold mb-0">Rp {{ number_format($product->price, 0, ',', '.') }}
-                                    </h4>
-                                </div>
-
-                                <form action="{{ route('purchase.submit') }}" method="POST">
-                                    @csrf
-                                    <input type="hidden" name="type" value="fixed">
-                                    <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                    <button type="submit"
-                                        class="btn btn-info w-100 py-2 fw-bold rounded-pill shadow-sm purchase-btn text-dark">
-                                        BUY NOW
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                @endforeach
-
-                {{-- Custom Amount Card --}}
-                <div class="col-md-6 col-lg-3">
-                    <div class="card dark-card text-white h-100 shadow-sm item-card text-center border-info border-opacity-50"
-                        style="border-style: dashed !important; background: rgba(15, 23, 42, 0.4) !important;">
-                        <div class="card-body d-flex flex-column p-4">
-                            <div class="mb-3 mx-auto icon-glow">
-                                <span style="font-size: 3rem;">✨</span>
-                            </div>
-                            <h5 class="card-title fw-bold text-info mb-1">Custom Amount</h5>
-                            <p class="small text-white-50 mb-3">Min. 100 (Rp 10/Coin)</p>
-
-                            <form action="{{ route('purchase.submit') }}" method="POST" class="mt-auto">
-                                @csrf
-                                <input type="hidden" name="type" value="custom">
-                                <div class="input-group mb-3">
-                                    <input type="number" name="amount" id="customInput"
-                                        class="form-control bg-black bg-opacity-50 text-white border-secondary text-center rounded-start-pill"
-                                        placeholder="Qty" min="100" required>
-                                    <span
-                                        class="input-group-text bg-secondary border-secondary text-white rounded-end-pill">Qty</span>
-                                </div>
-                                <div class="d-flex justify-content-between small px-2 mb-3">
-                                    <span class="text-white-50">Total:</span>
-                                    <span id="customDisplay" class="text-success fw-bold fs-5">Rp 0</span>
-                                </div>
-                                <button type="submit"
-                                    class="btn btn-outline-info w-100 py-2 fw-bold rounded-pill transition-all">PURCHASE</button>
-                            </form>
-                        </div>
-                    </div>
+            @foreach ($products as $product)
+            <div class="col-md-6 col-lg-3">
+                <div class="card dark-card text-white h-100 shadow-sm item-card         text-center">
+                <div class="card-body d-flex flex-column p-4">
+                
+                {{-- UKURAN GAMBAR DIPERBESAR JADI 100px --}}
+                <div class="mb-3 mx-auto icon-glow">
+                    <img src="{{ asset('assets/koinkecil.png') }}" alt="Paket Koin" 
+                         style="width: 150px; height: 150px; object-fit: contain;">
                 </div>
+                
+                <h5 class="card-title fw-bold text-info mb-3">{{ $product->product_name }}</h5>
+                <p class="card-text text-white-50 small flex-grow-1 px-2">
+                    {{ $product->description ?? 'Get ' . number_format($product->amount) . ' coins for your account instantly.' }}
+                </p>
+
+                <div class="bg-black bg-opacity-40 rounded-pill py-2 mb-3 border border-white border-opacity-10">
+                    <h4 class="text-white fw-bold mb-0">Rp {{ number_format($product->price, 0, ',', '.') }}</h4>
+                </div>
+
+                <form action="{{ route('purchase.submit') }}" method="POST">
+                    @csrf
+                    <input type="hidden" name="type" value="fixed">
+                    <input type="hidden" name="product_id" value="{{ $product->id }}">
+                    <button type="submit" class="btn btn-info w-100 py-2 fw-bold rounded-pill shadow-sm purchase-btn text-dark">
+                        BUY NOW
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+@endforeach
+
+{{-- Custom Amount Card --}}
+<div class="col-md-6 col-lg-3">
+    <div class="card dark-card text-white h-100 shadow-sm item-card text-center border-info border-opacity-50"
+        style="border-style: dashed !important; background: rgba(15, 23, 42, 0.4) !important;">
+        <div class="card-body d-flex flex-column p-4">
+            
+            {{-- UKURAN GAMBAR DIPERBESAR JADI 100px --}}
+            <div class="mb-3 mx-auto icon-glow">
+                <img src="{{ asset('assets/koinbesar.png') }}" alt="Kustom Koin" 
+                     style="width: 150px; height: 150px; object-fit: contain;">
+            </div>
+            
+            <h5 class="card-title fw-bold text-info mb-1">Custom Amount</h5>
+            <p class="small text-white-50 mb-3">Min. 100 (Rp 10/Coin)</p>
+
+            <form action="{{ route('purchase.submit') }}" method="POST" class="mt-auto">
+                @csrf
+                <input type="hidden" name="type" value="custom">
+                <div class="input-group mb-3">
+                    <input type="number" name="amount" id="customInput" class="form-control bg-black bg-opacity-50 text-white border-secondary text-center rounded-start-pill" placeholder="Qty" min="100" max="1000000" required>
+                    <span class="input-group-text bg-secondary border-secondary text-white rounded-end-pill">Qty</span>
+                </div>
+                <div class="d-flex justify-content-between small px-2 mb-3">
+                    <span class="text-white-50">Total:</span>
+                    <span id="customDisplay" class="text-success fw-bold fs-5">Rp 0</span>
+                </div>
+                <button type="submit" class="btn btn-outline-info w-100 py-2 fw-bold rounded-pill transition-all">PURCHASE</button>
+            </form>
+        </div>
+    </div>
+</div>
             </div>
         </div>
     </div>
@@ -185,7 +184,6 @@
             --neon-blue: #0dcaf0;
         }
 
-        /* FIX: Memaksa Background Radial di Body agar menyatu dengan Dashboard */
         body {
             background-color: #060918 !important;
             background-image: radial-gradient(circle at 50% 50%, #101a33 0%, #060918 100%) !important;
@@ -193,7 +191,6 @@
             color: #e2e8f0;
         }
 
-        /* Card bergaya Glassmorphism */
         .dark-card {
             background: rgba(15, 23, 42, 0.7) !important;
             backdrop-filter: blur(15px);
@@ -217,8 +214,9 @@
             background: rgba(15, 23, 42, 0.85) !important;
         }
 
-        .icon-glow {
-            filter: drop-shadow(0 0 10px rgba(0, 217, 255, 0.3));
+        .icon-glow img {
+            filter: drop-shadow(0 0 15px rgba(0, 217, 255, 0.6));
+            transition: transform 0.3s ease;
         }
 
         .purchase-btn {
@@ -242,12 +240,10 @@
                 transform: scale(0.95);
                 box-shadow: 0 0 0 0 rgba(25, 135, 84, 0.7);
             }
-
             70% {
                 transform: scale(1);
                 box-shadow: 0 0 0 10px rgba(25, 135, 84, 0);
             }
-
             100% {
                 transform: scale(0.95);
                 box-shadow: 0 0 0 0 rgba(25, 135, 84, 0);
@@ -267,12 +263,19 @@
     </style>
 
     <script>
-        document.getElementById('customInput').addEventListener('input', function() {
-            let coins = this.value;
-            let price = coins * 10;
-            if (coins < 0) price = 0;
-            document.getElementById('customDisplay').innerText = 'Rp ' + new Intl.NumberFormat('id-ID').format(
-                price);
-        });
-    </script>
+    document.getElementById('customInput').addEventListener('input', function() {
+        // 1. Cek jika input melebihi 1 juta, paksa ubah nilainya menjadi 1 juta
+        if (this.value > 1000000) {
+            this.value = 1000000;
+        }
+
+        let coins = this.value;
+        let price = coins * 10;
+        
+        if (coins < 0) price = 0;
+        
+        // 2. Format mata uang Rupiah tetap berjalan normal
+        document.getElementById('customDisplay').innerText = 'Rp ' + new Intl.NumberFormat('id-ID').format(price);
+    });
+</script>
 @endsection

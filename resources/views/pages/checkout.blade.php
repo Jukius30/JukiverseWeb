@@ -7,7 +7,6 @@
     <div class="row justify-content-center">
         <div class="col-md-5">
             <div class="card dark-card border-0 shadow-lg rounded-4 overflow-hidden">
-                {{-- Header dengan Gradient --}}
                 <div class="card-header bg-black bg-opacity-50 py-4 text-center border-0">
                     <h4 class="mb-0 fw-bold text-white text-uppercase tracking-wide">Konfirmasi Pesanan</h4>
                     <p class="text-white-50 small mb-0">Silakan periksa detail pesanan Anda</p>
@@ -81,8 +80,6 @@
 </div>
 
 <style>
-    /* Body sudah radial gradient dari layout utama */
-
     .dark-card {
         background: rgba(15, 23, 42, 0.8) !important;
         backdrop-filter: blur(15px);

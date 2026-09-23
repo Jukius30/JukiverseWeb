@@ -3,7 +3,6 @@
 @section('title', 'Jukiverse - Home')
 
 @section('content')
-{{-- Menghapus bg-light agar background body radial terlihat --}}
 <div class="dashboard-wrapper min-vh-100 pb-5">
     
     {{-- Hero Section --}}
@@ -37,7 +36,6 @@
 
     <div class="container">
         <div class="row g-4">
-            {{-- Stat Card: Credits --}}
             <div class="col-12 col-md-6 col-lg-4">
                 <div class="card dark-card border-0 shadow-lg rounded-4 overflow-hidden h-100 border-top border-4 border-success">
                     <div class="card-body p-4">
@@ -57,8 +55,6 @@
                     </div>
                 </div>
             </div>
-
-            {{-- Action Card: Store --}}
             <div class="col-12 col-md-6 col-lg-4">
                 <a href="{{ route('store') }}" class="card dark-card border-0 shadow-lg rounded-4 h-100 text-decoration-none transition-hover border-top border-4 border-info">
                     <div class="card-body p-4">
@@ -98,7 +94,6 @@
         --neon-cyan: #00d9ff;
     }
 
-    /* Memaksa background radial ke seluruh halaman */
     body {
         background-color: #060918 !important;
         background-image: radial-gradient(circle at 50% 50%, #101a33 0%, #060918 100%) !important;
@@ -115,7 +110,6 @@
         border-radius: 0 0 3rem 3rem;
     }
 
-    /* Card bergaya Glassmorphism (Transparan Gelap) */
     .dark-card {
         background: rgba(15, 23, 42, 0.6) !important;
         backdrop-filter: blur(15px);
@@ -160,7 +154,6 @@
         letter-spacing: 0.1em;
     }
 
-    /* Perbaikan link Top Up agar tidak tenggelam di background gelap */
     .btn-link:hover {
         color: #fff !important;
         text-shadow: 0 0 10px rgba(25, 135, 84, 0.5);

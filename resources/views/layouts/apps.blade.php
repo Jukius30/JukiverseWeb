@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     <title>@yield('title', 'Jukiverse')</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -120,14 +121,6 @@
                         <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
                         <li class="nav-item"><a class="nav-link" href="/store">Store</a></li>
                         <li class="nav-item ms-lg-3">
-                            @if(session('username'))
-                                <div class="d-flex align-items-center gap-3 bg-white bg-opacity-10 px-3 py-2 rounded-pill border border-white border-opacity-20 shadow-sm">
-                                    <small class="fw-bold text-info"><i class="bi bi-person-circle me-1"></i> {{ session('username') }}</small>
-                                </div>
-                            @else
-                                <a href="/login" class="btn btn-sm btn-info px-4 rounded-pill fw-bold shadow-glow">Login</a>
-                            @endif
-                        </li>
                     </ul>
                 </div>
             </div>
@@ -140,50 +133,31 @@
 
     <footer class="pt-5 pb-4 mt-5">
         <div class="container">
-            <div class="row g-4">
-                <div class="col-lg-4">
-                    <img src="{{ asset('assets/logo.png') }}" alt="Logo" height="40" class="mb-3">
-                    <p>
-                        Jukiverse menyediakan ekosistem gaming terbaik dengan sistem pembayaran yang aman dan koin yang bisa langsung digunakan di dunia virtual kami.
-                    </p>
-                </div>
-                
-                <div class="col-md-4 col-lg-2">
-                    <h6 class="text-white fw-bold mb-3">Quick Links</h6>
-                    <ul class="list-unstyled">
-                        <li><a href="/" class="footer-link">Dashboard</a></li>
-                        <li><a href="/store" class="footer-link">Store</a></li>
-                        <li><a href="#" class="footer-link">Terms of Service</a></li>
-                    </ul>
-                </div>
-
-                <div class="col-md-4 col-lg-3">
-                    <h6 class="text-white fw-bold mb-3">Support</h6>
-                    <ul class="list-unstyled">
-                        <li><a href="#" class="footer-link">Help Center</a></li>
-                        <li><a href="#" class="footer-link">Contact Admin</a></li>
-                        <li><a href="#" class="footer-link">Report a Bug</a></li>
-                    </ul>
-                </div>
-                
-                <div class="col-md-4 col-lg-3">
-                    <h6 class="text-white fw-bold mb-3">Community</h6>
-                    <div class="d-flex gap-2">
-                        <a href="https://www.instagram.com/jukiverse.id/" class="social-icon" target="_blank">
-                            <i class="fab fa-instagram"></i>
-                        </a>
-                        <a href="#" class="social-icon">
-                            <i class="fab fa-discord"></i>
-                        </a>
-                        <a href="#" class="social-icon">
-                            <i class="fab fa-youtube"></i>
-                        </a>
-                    </div>
+            <div class="container">
+    <div class="row g-4 justify-content-between">
+        
+        <div class="col-lg-4">
+            <img src="{{ asset('assets/logo.png') }}" alt="Logo" height="40" class="mb-3">
+                <p>
+                Jukiverse adalah server Survival Slimefun yang dirancang untuk pengalaman bermain maksimal. Dengan dukungan berbagai plugin kustom, kami menciptakan dunia virtual yang seru, stabil, dan penuh dengan hal baru untuk ditemukan setiap harinya.
+                </p>
+            </div>
+        
+            <div class="col-md-4 col-lg-3 ms-auto text-md-end">
+                <h6 class="text-white fw-bold mb-3">Community</h6>
+                <div class="d-flex gap-2 justify-content-md-end">
+                    <a href="https://www.instagram.com/jukiverse.id/" cl
+                        ="social    -icon" target="_blank">
+                        <i class="fab fa-instagram"></i>
+                    </a>
                 </div>
             </div>
+
+        </div>
+    </div>
             
             <div class="mt-5 pt-4 border-top border-white border-opacity-10 text-center">
-                <p class="small mb-0">&copy; {{ date('Y') }} Jukiverse. Crafted for the best gaming experience.</p>
+                <p class="small mb-0">&copy; {{ date('Y') }} Jukiverse. All Rights Reserved.</p>
             </div>
         </div>
     </footer>

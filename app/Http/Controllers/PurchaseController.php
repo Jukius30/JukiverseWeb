@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PlayerEmail;
+use App\Models\Product;
+use App\Models\ProvisionLog;
+use App\Models\Transaction;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Midtrans\Config;
@@ -11,187 +14,171 @@ use Midtrans\Snap;
 
 class PurchaseController extends Controller
 {
-    /**
-     * Menampilkan halaman Struk (Review) sebelum bayar
-     */
-    public function store(Request $request)
-    {
-        $type = $request->input('type');
-        $uuid = session('uuid');
+  public function store(Request $request)
+  {
+    $type = $request->input('type');
 
-        if ($type === 'fixed') {
-            $product = DB::table('products')->where('id', $request->product_id)->first();
-            if (!$product) return back()->with('error', 'Produk tidak ditemukan.');
+    if ($type === 'fixed') {
+      $product = Product::find($request->product_id);
 
-            $coinAmount = (int) $product->product_name;
+      if (!$product) {
+        return back()->with('error', 'Produk tidak ditemukan.');
+      }
 
-            $data = [
-                'type' => 'fixed',
-                'productId' => $product->id,
-                'productName' => $coinAmount . " K-Bucks",
-                'amount' => $coinAmount,
-                'price' => $product->price
-            ];
-        } else {
-            $request->validate(['amount' => 'required|integer|min:100']);
-            $coins = $request->input('amount');
-            $data = [
-                'type' => 'custom',
-                'productId' => null,
-                'productName' => number_format($coins) . " K-Bucks (Custom)",
-                'amount' => $coins,
-                'price' => $coins * 10
-            ];
-        }
+      $coinAmount = (int) $product->product_name;
 
-        return view('pages.checkout', $data);
+      $data = [
+        'type' => 'fixed',
+        'productId' => $product->id,
+        'productName' => $coinAmount . " K-Bucks",
+        'amount' => $coinAmount,
+        'price' => $product->price,
+      ];
+    } else {
+      $request->validate([
+        'amount' => 'required|integer|min:100',
+      ]);
+
+      $coins = $request->input('amount');
+
+      $data = [
+        'type' => 'custom',
+        'productId' => null,
+        'productName' => number_format($coins) . " K-Bucks (Custom)",
+        'amount' => $coins,
+        'price' => $coins * 10,
+      ];
     }
 
-    /**
-     * Membuat transaksi ke Midtrans dan Redirect ke halaman pembayaran
-     */
-    public function pay(Request $request)
-    {
-        Config::$serverKey = env('MIDTRANS_SERVER_KEY');
-        Config::$isProduction = false;
-        Config::$isSanitized = true;
-        Config::$is3ds = true;
+    return view('pages.checkout', $data);
+  }
 
-        $orderId = 'JKV-' . time() . rand(10, 99);
-        $uuid = session('uuid');
-        $userEmail = DB::table('emails')->where('minecraft_uuid', $uuid)->first();
+  public function pay(Request $request)
+  {
+    Config::$serverKey = env('MIDTRANS_SERVER_KEY');
+    Config::$isProduction = false;
+    Config::$isSanitized = true;
+    Config::$is3ds = true;
 
-        // Pastikan product_id jadi NULL jika memang tidak ada (untuk custom order)
-        $productId = $request->product_id ?: null;
+    $orderId = 'JKV-' . time() . rand(10, 99);
+    $uuid = session('uuid');
 
-        // Simpan transaksi
-        DB::table('transactions')->insert([
-            'email_id' => $userEmail->id,
-            'product_id' => $productId, // Sekarang bisa NULL tanpa error 23000
-            'minecraft_uuid' => $uuid,
-            'minecraft_name' => session('username'),
-            'midtrans_order_id' => $orderId,
-            'payment_status' => 'pending',
-            'amount' => $request->price,
-            'created_at' => now(),
-            'updated_at' => now(),
+    $userEmail = PlayerEmail::where('minecraft_uuid', $uuid)->first();
+
+    if (!$userEmail) {
+      return redirect()->route('store')->with('error', 'Data email player tidak ditemukan.');
+    }
+
+    $productId = $request->product_id ?: 99;
+
+    Transaction::create([
+      'email_id' => $userEmail->id,
+      'product_id' => $productId,
+      'minecraft_uuid' => $uuid,
+      'minecraft_name' => session('username'),
+      'midtrans_order_id' => $orderId,
+      'payment_status' => 'pending',
+      'amount' => $request->price,
+    ]);
+
+    $params = [
+      'transaction_details' => [
+        'order_id' => $orderId,
+        'gross_amount' => (int) $request->price,
+      ],
+      'customer_details' => [
+        'first_name' => session('username'),
+        'email' => session('email'),
+      ],
+      'callbacks' => [
+        'finish' => route('store'),
+        'unfinish' => route('store'),
+        'error' => route('store'),
+      ],
+    ];
+
+    try {
+      $snapToken = Snap::getSnapToken($params);
+
+      return redirect()->away("https://app.sandbox.midtrans.com/snap/v2/vtweb/" . $snapToken);
+    } catch (\Exception $exception) {
+      return back()->with('error', 'Gagal memproses ke Midtrans: ' . $exception->getMessage());
+    }
+  }
+
+  public function callback(Request $request)
+  {
+    Log::info("📨 Callback masuk untuk Order: " . $request->order_id);
+
+    $status = $request->transaction_status;
+    $orderId = $request->order_id;
+
+    if ($status == 'capture' || $status == 'settlement') {
+      $transaction = Transaction::where('midtrans_order_id', $orderId)->first();
+
+      if ($transaction && $transaction->payment_status == 'pending') {
+        $transaction->update([
+          'payment_status' => 'success',
         ]);
 
-        $params = [
-            'transaction_details' => [
-                'order_id' => $orderId,
-                'gross_amount' => (int) $request->price,
-            ],
-            'customer_details' => [
-                'first_name' => session('username'),
-                'email' => session('email'),
-            ],
-            // TAMBAHKAN ATAU PASTIKAN BAGIAN INI ADA:
-            'callbacks' => [
-                'finish' => route('store'), // Akan kembali ke halaman Store
-                'unfinish' => route('store'),
-                'error' => route('store'),
-            ]
-        ];
+        Log::info("✅ Status Database Updated: Success ($orderId)");
 
-        try {
-            $snapToken = Snap::getSnapToken($params);
-            return redirect()->away("https://app.sandbox.midtrans.com/snap/v2/vtweb/" . $snapToken);
-        } catch (\Exception $e) {
-            return back()->with('error', 'Gagal memproses ke Midtrans: ' . $e->getMessage());
-        }
+        $coinAmount = (int) ($transaction->amount / 10);
+
+        $this->sendToPterodactyl($transaction->minecraft_uuid, $coinAmount, $orderId);
+      } else {
+        Log::warning("⚠️ Order $orderId sudah success atau tidak ditemukan.");
+      }
     }
 
-    /**
-     * Webhook Callback: Midtrans memanggil rute ini saat pembayaran sukses
-     */
-    public function callback(Request $request)
-    {
-        Log::info("📨 Callback masuk untuk Order: " . $request->order_id);
+    return response()->json(['message' => 'Webhook received']);
+  }
 
-        // Logic Pengecekan Signature (Matikan sementara jika test via Postman)
-        // $serverKey = env('MIDTRANS_SERVER_KEY');
-        // $hashed = hash("sha512", $request->order_id . $request->status_code . $request->gross_amount . $serverKey);
-        // if ($hashed !== $request->signature_key) return response()->json(['message' => 'Invalid Signature'], 403);
+  private function sendToPterodactyl($uuid, $amount, $orderId)
+  {
+    $transaction = Transaction::where('midtrans_order_id', $orderId)->first();
 
-        $status = $request->transaction_status;
-        $orderId = $request->order_id;
-
-        if ($status == 'capture' || $status == 'settlement') {
-
-            $trx = DB::table('transactions')->where('midtrans_order_id', $orderId)->first();
-
-            if ($trx && $trx->payment_status == 'pending') {
-                // 1. Update status di database kita
-                DB::table('transactions')->where('midtrans_order_id', $orderId)->update([
-                    'payment_status' => 'success',
-                    'updated_at' => now()
-                ]);
-                Log::info("✅ Status Database Updated: Success ($orderId)");
-
-                // 2. Tentukan jumlah koin (asumsi harga 1000 = 100 koin)
-                $coinAmount = (int) ($trx->amount / 10);
-
-                // 3. Eksekusi perintah ke Pterodactyl
-                $this->sendToPterodactyl($trx->minecraft_uuid, $coinAmount, $orderId);
-            } else {
-                Log::warning("⚠️ Order $orderId sudah success atau tidak ditemukan.");
-            }
-        }
-
-        return response()->json(['message' => 'Webhook received']);
+    if (!$transaction || empty($transaction->minecraft_name)) {
+      return;
     }
 
-    /**
-     * Fungsi internal untuk menembak API Pterodactyl
-     */
-    private function sendToPterodactyl($uuid, $amount, $orderId)
-    {
-        $trx = DB::table('transactions')->where('midtrans_order_id', $orderId)->first();
+    $name = $transaction->minecraft_name;
+    $command = "nextcredit give $name $amount";
 
-        if ($trx && !empty($trx->minecraft_name)) {
-            $name = $trx->minecraft_name;
-            $command = "nextcredit give $name $amount";
+    try {
+      $response = Http::withHeaders([
+        'Authorization' => 'Bearer ' . env('PTERO_API_KEY'),
+        'Content-Type' => 'application/json',
+        'Accept' => 'application/json',
+      ])->post(env('PTERO_PANEL_URL') . "/api/client/servers/" . env('PTERO_SERVER_UUID') . "/command", [
+        'command' => $command,
+      ]);
 
-            try {
-                // Kirim command ke Pterodactyl Panel
-                $response = Http::withHeaders([
-                    'Authorization' => 'Bearer ' . env('PTERO_API_KEY'),
-                    'Content-Type' => 'application/json',
-                    'Accept' => 'application/json',
-                ])->post(env('PTERO_PANEL_URL') . "/api/client/servers/" . env('PTERO_SERVER_UUID') . "/command", [
-                    'command' => $command
-                ]);
+      $isSuccess = $response->successful();
 
-                $isSuccess = $response->successful();
+      ProvisionLog::create([
+        'transaction_id' => $transaction->id,
+        'execution_status' => $isSuccess ? 'success' : 'failed',
+        'executed_at' => now(),
+        'message_log' => $isSuccess
+          ? "Command executed: $command"
+          : "Ptero Error: " . $response->body(),
+      ]);
 
-                // INSERT KE PROVISION_LOGS
-                DB::table('provision_logs')->insert([
-                    'transaction_id'   => $trx->id, // Mengambil ID dari tabel transactions
-                    'execution_status' => $isSuccess ? 'success' : 'failed',
-                    'executed_at'      => now(),
-                    'message_log'      => $isSuccess ? "Command executed: $command" : "Ptero Error: " . $response->body(),
-                    'created_at'       => now(),
-                    'updated_at'       => now(),
-                ]);
+      if ($isSuccess) {
+        Log::info("✅ Provisioning Success for $name");
+      } else {
+        Log::error("❌ Provisioning Failed for $orderId");
+      }
+    } catch (\Exception $exception) {
+      ProvisionLog::create([
+        'transaction_id' => $transaction->id,
+        'execution_status' => 'error',
+        'executed_at' => now(),
+        'message_log' => 'System Exception: ' . $exception->getMessage(),
+      ]);
 
-                if ($isSuccess) {
-                    Log::info("✅ Provisioning Success for $name");
-                } else {
-                    Log::error("❌ Provisioning Failed for $orderId");
-                }
-            } catch (\Exception $e) {
-                // Log jika server Pterodactyl mati atau koneksi putus
-                DB::table('provision_logs')->insert([
-                    'transaction_id'   => $trx->id,
-                    'execution_status' => 'error',
-                    'executed_at'      => now(),
-                    'message_log'      => 'System Exception: ' . $e->getMessage(),
-                    'created_at'       => now(),
-                    'updated_at'       => now(),
-                ]);
-                Log::error("⚠️ Critical Provisioning Error: " . $e->getMessage());
-            }
-        }
+      Log::error("⚠️ Critical Provisioning Error: " . $exception->getMessage());
     }
+  }
 }

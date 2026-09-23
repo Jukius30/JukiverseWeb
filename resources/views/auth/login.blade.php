@@ -6,23 +6,12 @@
 <div class="container d-flex align-items-center justify-content-center" style="min-height: 85vh;">
     <div class="row justify-content-center w-100">
         <div class="col-md-5 col-lg-4">
-            
-            {{-- Logo atau Icon Branding --}}
-            <div class="text-center mb-4">
-                <div class="login-icon-box mb-3 shadow-glow">
-                    <i class="bi bi-cpu text-info display-4"></i>
-                </div>
-                <h2 class="fw-bold text-white mb-1">Jukiverse <span class="text-info">Store</span></h2>
-                {{-- Mengganti text-muted menjadi text-white-50 agar lebih terbaca --}}
-                <p class="text-white-50 small text-uppercase tracking-widest">Secure Connection Portal</p>
-            </div>
 
             <div class="card login-card border-0 shadow-lg overflow-hidden">
                 <div class="card-body p-4 p-lg-5">
                     
                     <div class="mb-4">
                         <h4 class="fw-bold text-white mb-2">Welcome, Citizen!</h4>
-                        {{-- Mengganti text-muted menjadi text-white-50 --}}
                         <p class="text-white-50 small">Hubungkan akun Minecraft kamu untuk mulai berbelanja.</p>
                     </div>
 
@@ -93,8 +82,9 @@
                 </div>
             </div>
             
+            {{-- Teks Hak Cipta Sesuai Permintaan --}}
             <p class="text-center mt-4 small text-white-50 opacity-75">
-                &copy; {{ date('Y') }} Jukiverse Project. All Rights Reserved.
+                © 2026 Jukiverse. All Rights Reserved.
             </p>
         </div>
     </div>
@@ -105,28 +95,16 @@
         --neon-cyan: #00d9ff;
     }
 
-    /* Memastikan background body gelap agar elemen login terlihat kontras */
     body {
         background-color: #060918 !important;
         background-image: radial-gradient(circle at 50% 50%, #101a33 0%, #060918 100%);
     }
 
     .login-card {
-        background: rgba(15, 23, 42, 0.85) !important; /* Dipertebal sedikit */
+        background: rgba(15, 23, 42, 0.85) !important;
         backdrop-filter: blur(20px);
         border: 1px solid rgba(0, 217, 255, 0.2) !important;
         border-radius: 1.5rem;
-    }
-
-    .login-icon-box {
-        width: 80px;
-        height: 80px;
-        background: rgba(0, 217, 255, 0.1);
-        border: 2px solid var(--neon-cyan);
-        border-radius: 20px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
     }
 
     .custom-input-group .input-group-text {
@@ -153,7 +131,7 @@
 
     .btn-connect {
         background-color: var(--neon-cyan);
-        color: #060918 !important; /* Memastikan teks tombol tetap hitam pekat */
+        color: #060918 !important;
         border: none;
         letter-spacing: 1px;
         transition: all 0.3s ease;
@@ -169,11 +147,6 @@
         box-shadow: 0 0 20px rgba(0, 217, 255, 0.25);
     }
 
-    .tracking-widest {
-        letter-spacing: 0.2em;
-    }
-
-    /* Memperjelas pesan error input */
     .invalid-feedback {
         color: #ff4d4d;
         font-size: 0.8rem;
